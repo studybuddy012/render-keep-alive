@@ -2,13 +2,19 @@ name: Keep Render Alive
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # har 5 minute
-  workflow_dispatch:       # manual run option
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Render App
+      - name: Ping Render App (with retries)
         run: |
-          curl -L --max-time 60 https://webchat-y4za.onrender.com/
+          for i in 1 2 3; do
+            echo "Attempt $i..."
+            curl -L --max-time 120 https://webchat-y4za.onrender.com/ && exit 0
+            echo "Failed, retrying in 20s..."
+            sleep 20
+          done
+          exit 1
